@@ -4,13 +4,14 @@ from typing import NotRequired, Annotated, Sequence
 from langchain_core.messages import BaseMessage  
 from langgraph.graph.message import add_messages
 from langchain_openai import ChatOpenAI
+from langchain.chat_models import init_chat_model
 from deepagents.state import Todo  
 from agent.create_deep_agent import create_custom_deep_agent
   
 class MinimalAgentState(AgentState):  
     todos: NotRequired[list[Todo]]  
 
-# # Use the Responses API path (recommended for GPT-5 controls)
+# Use the Responses API path (recommended for GPT-5 controls)
 # model = ChatOpenAI(
 #     model="gpt-5",                        # or "gpt-5-mini" / "gpt-5-nano"
 #     use_responses_api=True,               # ensures Responses API path
@@ -20,7 +21,14 @@ class MinimalAgentState(AgentState):
 #     temperature=0                         # optional: steadier outputs
 # )
 
+# OpenAI GPT-5 model (commented out)
 model = ChatOpenAI(model="gpt-5", reasoning_effort="low")
+
+# Ollama local model
+# model = init_chat_model(
+#     model="ollama:gpt-oss:20b",
+#     reasoning_effort="low",
+# )
 
 graph = create_custom_deep_agent(
     tools=[], 
