@@ -4,16 +4,6 @@ from typing import Annotated
 from langgraph.prebuilt import InjectedState
 
 
-def clean_file_path(file_path: str) -> str:
-    """Clean up file paths that may have extra quotes or brackets."""
-    # Remove surrounding brackets, quotes (both straight and curly)
-    cleaned = file_path.strip()
-    cleaned = cleaned.strip("[]")
-    cleaned = cleaned.strip("'\"''""")
-    cleaned = cleaned.strip()
-    return cleaned
-
-
 @tool
 def list_attachments(
     state: Annotated[dict, InjectedState]
@@ -31,10 +21,9 @@ def list_attachments(
     
     file_list = []
     for i, file_path in enumerate(attached_files, 1):
-        cleaned_path = clean_file_path(file_path)
-        path_obj = Path(cleaned_path)
+        path_obj = Path(file_path)
         file_name = path_obj.name
-        file_list.append(f"{i}. {file_name} (path: {cleaned_path})")
+        file_list.append(f"{i}. {file_name} (path: {file_path})")
     
     return f"Attached files:\n" + "\n".join(file_list)
 
@@ -59,24 +48,20 @@ def read_attachment(
     if not attached_files:
         return "No files are currently attached."
     
-    # Clean the input file name
-    cleaned_input = clean_file_path(file_name)
-    file_name_only = Path(cleaned_input).name
-    
     # Find matching file path
     matching_file = None
+    file_name_only = Path(file_name).name
     
     for attached_path in attached_files:
-        cleaned_attached = clean_file_path(attached_path)
-        attached_path_obj = Path(cleaned_attached)
+        attached_path_obj = Path(attached_path)
         # Match by full path or just filename
-        if cleaned_attached == cleaned_input or attached_path_obj.name == file_name_only:
-            matching_file = cleaned_attached
+        if attached_path == file_name or attached_path_obj.name == file_name_only:
+            matching_file = attached_path
             break
     
     if not matching_file:
-        available = [Path(clean_file_path(f)).name for f in attached_files]
-        return f"File '{cleaned_input}' not found in attached files. Available files: {', '.join(available)}"
+        available = [Path(f).name for f in attached_files]
+        return f"File '{file_name}' not found in attached files. Available files: {', '.join(available)}"
     
     # Check if file exists
     file_path = Path(matching_file)
