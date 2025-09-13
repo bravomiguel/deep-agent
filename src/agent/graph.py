@@ -3,7 +3,8 @@ from typing import NotRequired
 from langchain_openai import ChatOpenAI
 from deepagents.state import Todo  
 from agent.create_deep_agent import create_custom_deep_agent
-from agent.tools import read_attachment, list_attachments
+from agent.tools import internet_search, read_attachment, list_attachments, write_todos
+from agent.prompts import SYSTEM_PROMPT
   
 class AgentState(AgentState):  
     todos: NotRequired[list[Todo]]
@@ -29,9 +30,9 @@ model = ChatOpenAI(model="gpt-5", reasoning_effort="low")
 # )
 
 graph = create_custom_deep_agent(
-    tools=[read_attachment, list_attachments], 
-    instructions="You are an assistant for general knowledge work. When files are provided, you can use list_attachments to see what's available and read_attachment to read their contents.",  
-    built_in_tools=['write_todos'],  
+    tools=[read_attachment, list_attachments, internet_search, write_todos],
+    base_prompt=SYSTEM_PROMPT,
+    # built_in_tools=['write_todos'],  
     state_schema=AgentState,
     model=model,
 )

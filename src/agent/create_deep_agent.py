@@ -8,15 +8,15 @@ from deepagents.tools import write_todos, write_file, read_file, ls, edit_file
 from deepagents.state import DeepAgentState  
 from deepagents.sub_agent import _create_task_tool, SubAgent  
 from deepagents.model import get_default_model  
-from deepagents.interrupt import create_interrupt_hook, ToolInterruptConfig
-from agent.tools import read_attachment  
+from deepagents.interrupt import create_interrupt_hook, ToolInterruptConfig 
+from deepagents.graph import base_prompt as deepagents_base_prompt  
   
 StateSchema = TypeVar("StateSchema", bound=DeepAgentState)  
 StateSchemaType = Type[StateSchema]  
   
 def create_custom_deep_agent(  
     tools: Sequence[Union[BaseTool, Callable, dict[str, Any]]],  
-    instructions: str,  
+    instructions: str = "",  
     built_in_tools: Optional[list[str]] = None,  
     base_prompt: Optional[str] = None,  
     model: Optional[Union[str, LanguageModelLike]] = None,  
@@ -57,7 +57,8 @@ def create_custom_deep_agent(
     # Select built-in tools  
     if built_in_tools is None:  
         # Default: include all built-in tools  
-        selected_built_ins = list(available_built_in_tools.values())  
+        # selected_built_ins = list(available_built_in_tools.values())  
+        selected_built_ins = []
     else:  
         # Only include specified tools  
         selected_built_ins = []  
@@ -70,7 +71,7 @@ def create_custom_deep_agent(
       
     # Create custom base prompt  
     if base_prompt is None:  
-        base_prompt = _create_default_base_prompt(built_in_tools or list(available_built_in_tools.keys()))  
+        base_prompt = deepagents_base_prompt 
       
     # Combine instructions with base prompt  
     full_prompt = instructions + "\n\n" + base_prompt  
@@ -115,20 +116,3 @@ def create_custom_deep_agent(
         config_schema=config_schema,  
         checkpointer=checkpointer,  
     )  
-  
-def _create_default_base_prompt(included_tools: list[str]) -> str:  
-    """Create a minimal base prompt based on included tools."""  
-    prompt_parts = ["You have access to the following tools:\n"]  
-      
-    if 'write_todos' in included_tools:  
-        prompt_parts.append("""  
-## `write_todos`  
-Use this tool to manage and plan tasks. Use it frequently to track progress and break down complex tasks into smaller steps. Mark todos as completed immediately when done.  
-""")  
-      
-    prompt_parts.append("""  
-## `task`  
-Use this tool to delegate work to specialized sub-agents when appropriate.  
-""")  
-      
-    return "".join(prompt_parts)
