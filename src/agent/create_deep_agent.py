@@ -8,7 +8,8 @@ from deepagents.tools import write_todos, write_file, read_file, ls, edit_file
 from deepagents.state import DeepAgentState  
 from deepagents.sub_agent import _create_task_tool, SubAgent  
 from deepagents.model import get_default_model  
-from deepagents.interrupt import create_interrupt_hook, ToolInterruptConfig  
+from deepagents.interrupt import create_interrupt_hook, ToolInterruptConfig
+from agent.tools import read_attachment  
   
 StateSchema = TypeVar("StateSchema", bound=DeepAgentState)  
 StateSchemaType = Type[StateSchema]  
@@ -50,7 +51,7 @@ def create_custom_deep_agent(
         'write_file': write_file,  
         'read_file': read_file,  
         'ls': ls,  
-        'edit_file': edit_file  
+        'edit_file': edit_file,
     }  
       
     # Select built-in tools  
@@ -123,12 +124,6 @@ def _create_default_base_prompt(included_tools: list[str]) -> str:
         prompt_parts.append("""  
 ## `write_todos`  
 Use this tool to manage and plan tasks. Use it frequently to track progress and break down complex tasks into smaller steps. Mark todos as completed immediately when done.  
-""")  
-      
-    if any(tool in included_tools for tool in ['write_file', 'read_file', 'edit_file', 'ls']):  
-        prompt_parts.append("""  
-## File System Tools  
-You have access to file operations for persistent storage and content management.  
 """)  
       
     prompt_parts.append("""  

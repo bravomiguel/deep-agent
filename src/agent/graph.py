@@ -1,15 +1,13 @@
 from langgraph.prebuilt.chat_agent_executor import AgentState 
-from typing_extensions import TypedDict  
-from typing import NotRequired, Annotated, Sequence  
-from langchain_core.messages import BaseMessage  
-from langgraph.graph.message import add_messages
+from typing import NotRequired
 from langchain_openai import ChatOpenAI
-from langchain.chat_models import init_chat_model
 from deepagents.state import Todo  
 from agent.create_deep_agent import create_custom_deep_agent
+from agent.tools import read_attachment, list_attachments
   
-class MinimalAgentState(AgentState):  
-    todos: NotRequired[list[Todo]]  
+class AgentState(AgentState):  
+    todos: NotRequired[list[Todo]]
+    attached_files: NotRequired[list[str]]  # List of file paths for attachments  
 
 # Use the Responses API path (recommended for GPT-5 controls)
 # model = ChatOpenAI(
@@ -31,9 +29,9 @@ model = ChatOpenAI(model="gpt-5", reasoning_effort="low")
 # )
 
 graph = create_custom_deep_agent(
-    tools=[], 
-    instructions="You are an assistant without file system access.",  
-    built_in_tools=['write_todos'],  # Only include planning, no file tools  
-    state_schema=MinimalAgentState,
+    tools=[read_attachment, list_attachments], 
+    instructions="You are an assistant for general knowledge work. When files are provided, you can use list_attachments to see what's available and read_attachment to read their contents.",  
+    built_in_tools=['write_todos'],  
+    state_schema=AgentState,
     model=model,
 )
